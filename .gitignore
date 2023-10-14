@@ -1,0 +1,6 @@
+.idea/
+flagged/
+venv/
+*.iml
+out/
+customData/
