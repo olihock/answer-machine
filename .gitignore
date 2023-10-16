@@ -1,6 +1,7 @@
+venv/
+localenv/
 .idea/
 flagged/
-venv/
 *.iml
 out/
 data/
