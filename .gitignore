@@ -3,4 +3,4 @@ flagged/
 venv/
 *.iml
 out/
-customData/
+data/
