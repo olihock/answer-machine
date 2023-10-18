@@ -11,17 +11,19 @@ client = weaviate.Client(
 )
 
 
+def is_class_exists(class_name: str):
+    return client.schema.exists(class_name=class_name)
+
+
 def create_class(class_name: str):
     """
-    Simply create a new schema by given class name and vectorizer,
-    if it does not exist yet.
+    Simply create a new schema by given class name and vectorizer.
     """
-    if not client.schema.exists(class_name=class_name):
-        clazz = {
-            "class": class_name,
-            "vectorizer": weaviate_vectorizer
-        }
-        client.schema.create_class(clazz)
+    clazz = {
+        "class": class_name,
+        "vectorizer": weaviate_vectorizer
+    }
+    client.schema.create_class(clazz)
 
 
 def feed_vector_database(text_list, schema_name, batch_size=100):
