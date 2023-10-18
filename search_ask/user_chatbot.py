@@ -14,11 +14,11 @@ def num_tokens(text: str, model: str = GPT_MODEL) -> int:
     return len(encoding.encode(text))
 
 
-def engineer_prompt(question, similarities, token_budget=(4096-512)):
+def engineer_prompt(class_name, question, similarities, token_budget=(4096-512)):
     introduction = ("Use the below pages to answer the subsequent question. "
                     "If the answer cannot be found in the pages, write \"I could not find an appropriate answer.\".")
     prompt = introduction
-    for page in similarities['data']['Get']['Programming']:
+    for page in similarities['data']['Get'][class_name]:
         page_text = page['text']
         next_page_section = f'\n\nPage section: """\n{page_text}\n"""'
         if num_tokens(prompt + next_page_section + question) < token_budget:

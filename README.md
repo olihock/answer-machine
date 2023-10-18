@@ -1,16 +1,19 @@
+# Answer Machine
 
 ## Deployment
 
 ### Environment Variables
-| Variable       | Description                          |
-|----------------|--------------------------------------|
-| WEAVIATE_URL   | Base URL to Weaviate vector database |
-| OPENAI_API_KEY | OpenAI API Key to access ChatGPT     |
 
+| Variable            | Description                                                                                              |
+|---------------------|----------------------------------------------------------------------------------------------------------|
+| WEAVIATE_URL        | Base URL to Weaviate vector database                                                                     |
+| WEAVIATE_VECTORIZER | A Weaviate vectorizer (see https://weaviate.io/developers/weaviate/modules/retriever-vectorizer-modules) |
+| OPENAI_API_KEY      | OpenAI API Key to access ChatGPT                                                                         |
 
 ## Development
 
 ### Project Dependencies
+
 ```shell
 python3 -m pip install gradio
 python3 -m pip install openai
@@ -21,6 +24,7 @@ python3 -m pip install weaviate-client
 ```
 
 ### Python Environments
+
 ```shell
 python3 -m venv localenv
 source localenv/bin/activate
@@ -28,6 +32,7 @@ deactivate
 ```
 
 ### Vector Database
+
 ```shell
 cd weaviate
 docker compose up -d && docker compose logs -f weaviate

@@ -2,6 +2,16 @@ import os
 from PyPDF2 import PdfReader
 
 
+def slice_to_pages(file):
+    pages = []
+    with open(file.name, mode="rb") as file_content:
+        pdf_reader = PdfReader(file_content)
+        for page in pdf_reader.pages:
+            content = page.extract_text()
+            pages.append(content)
+    return pages
+
+
 def read_custom_data(data_path):
     """
     Read PDF files and ignore all other file types. Insert read text

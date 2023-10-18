@@ -4,22 +4,24 @@ import weaviate
 
 load_dotenv()
 weaviate_url = os.environ["WEAVIATE_URL"]
+weaviate_vectorizer = os.environ["WEAVIATE_VECTORIZER"]
 
 client = weaviate.Client(
     url=weaviate_url
 )
 
 
-def create_schema(class_name, vectorizer):
+def create_class(class_name: str):
     """
     Simply create a new schema by given class name and vectorizer,
     if it does not exist yet.
     """
-    schema = {
-        "class": class_name,
-        "vectorizer": vectorizer
-    }
-    client.schema.create_class(schema)
+    if not client.schema.exists(class_name=class_name):
+        clazz = {
+            "class": class_name,
+            "vectorizer": weaviate_vectorizer
+        }
+        client.schema.create_class(clazz)
 
 
 def feed_vector_database(text_list, schema_name, batch_size=100):
@@ -40,14 +42,14 @@ def feed_vector_database(text_list, schema_name, batch_size=100):
             batch.add_data_object(properties, schema_name)
 
 
-def search_similar_texts(question: str, limit=10):
+def search_similar_texts(class_name: str, question: str, limit=10):
     """
     Search similar texts to the question. The nearest documents
     according the vectors in descending order are returned.
     """
     response = (
         client.query
-        .get("Programming", ["no", "text"])
+        .get(class_name, ["no", "text"])
         .with_near_text({"concepts": [question]})
         .with_limit(limit)
         .do())
