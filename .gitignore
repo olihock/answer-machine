@@ -5,3 +5,4 @@ flagged/
 *.iml
 out/
 data/
+.env

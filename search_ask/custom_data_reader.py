@@ -18,7 +18,3 @@ def read_custom_data(data_path):
             page_text = page.extract_text()
             page_texts.append(page_text)
     return page_texts
-
-
-custom_data = run("data")
-print(custom_data.__len__())

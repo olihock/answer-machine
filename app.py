@@ -1,25 +1,20 @@
-import gradio.components
-import openai
 import os
+from search_ask.custom_data_reader import read_custom_data
+from search_ask.weaviate_client import feed_vector_database, search_similar_texts
+from search_ask.user_chatbot import engineer_prompt, answer_question
 
+PROJECT_DIR = os.path.abspath(os.curdir)
+data_location = os.path.join(PROJECT_DIR, "data")
 
-openai.api_key = os.environ["OPENAI_API_KEY"]
+# Read all custom data from the source.
+custom_data = read_custom_data(data_location)
 
+# Insert all chunked data into the vector database.
+feed_vector_database(custom_data, "Programming")
 
-def chat_bot(prompt):
-
-    message = {"role": "user", "content": prompt}
-
-    response = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=[message])
-
-    answer = response.choices[0].message.content
-
-    return answer
-
-
-iface = gradio.Interface(fn=chat_bot,
-                         inputs=gradio.Textbox(value="How do I have my coffee?", lines=10, label="Prompt"),
-                         outputs=gradio.Text(label="Answer"),
-                         title="AI Chatbot with Custom Data")
-
-iface.launch(share=True)
+# Find similarities of user question from the vector database.
+question = "How Would You Build a City?"
+similarities = search_similar_texts(question)
+prompt = engineer_prompt(question, similarities)
+answer = answer_question(prompt)
+print(answer)
