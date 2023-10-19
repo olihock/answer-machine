@@ -14,10 +14,27 @@ services:
       CLUSTER_HOSTNAME: 'node1'
     volumes:
       - weaviate-data:/weaviate-data
+    networks:
+      - answer-machine_weaviate
+    depends_on:
+      - t2v-transformers
   t2v-transformers:
     image: semitechnologies/transformers-inference:sentence-transformers-multi-qa-MiniLM-L6-cos-v1
     environment:
       ENABLE_CUDA: 0 # set to 1 to enable
       # NVIDIA_VISIBLE_DEVICES: all # enable if running with CUDA
+    networks:
+      - answer-machine_weaviate
+  answer-machine:
+    build:
+      dockerfile: Dockerfile
+    ports:
+      - "10000:10000"
+    networks:
+      - answer-machine_weaviate
+    depends_on:
+      - weaviate
 volumes:
   weaviate-data:
+networks:
+  answer-machine_weaviate:

@@ -1,4 +1,3 @@
-import gradio.components
 import os
 import re
 from search_ask.custom_data_reader import slice_to_pages
@@ -38,16 +37,3 @@ def build_class_name(file):
     file_path = os.path.basename(file.name)
     class_name = re.sub("[^A-Za-z0-9]+", "_", file_path)
     return class_name.capitalize()
-
-
-upload_component = gradio.File(label="Upload your context")
-question_component = gradio.Textbox(value="How can I build a city?", lines=10, label="Your question")
-answer_component = gradio.Text(label="Answer")
-
-iface = gradio.Interface(fn=search_for_answer,
-                         inputs=[upload_component, question_component],
-                         outputs=answer_component,
-                         title="Answer Machine")
-# Queueing uses Websockets and avoids timeout when indexing large PDF files.
-iface.queue()
-iface.launch(share=True)

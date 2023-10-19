@@ -1,8 +1,9 @@
 # Answer Machine
 
-## Deployment
+## Operations
 
-### Environment Variables
+### Configuration
+Configure following environment variables in an ```.env``` file in the project root.
 
 | Variable            | Description                                                                                              |
 |---------------------|----------------------------------------------------------------------------------------------------------|
@@ -10,31 +11,31 @@
 | WEAVIATE_VECTORIZER | A Weaviate vectorizer (see https://weaviate.io/developers/weaviate/modules/retriever-vectorizer-modules) |
 | OPENAI_API_KEY      | OpenAI API Key to access ChatGPT                                                                         |
 
-## Development
+### Deployment
 
-### Project Dependencies
-
-```shell
-python3 -m pip install gradio
-python3 -m pip install openai
-python3 -m pip install os
-python3 -m pip install dotenv
-python3 -m pip install sklearn
-python3 -m pip install weaviate-client
-```
-
-### Python Environments
-
-```shell
-python3 -m venv localenv
-source localenv/bin/activate
-deactivate
-```
-
-### Vector Database
-
+**Start Weaviate vector database**
 ```shell
 cd weaviate
 docker compose up -d && docker compose logs -f weaviate
-docker start docker-weaviate-1
+docker compose down
+```
+**Create Python environment**
+```shell
+python3 -m venv venv
+source venv/bin/activate
+deactivate
+```
+**Build Docker image**
+```shell
+docker build -t answer-machine .
+```
+**Maintain Docker container**
+```shell
+docker run --it -d --rm -p 10000:7860 answer-machine
+docker stop answer-machine
+docker start answer-machine
+```
+**Test app instance**
+```shell
+open http://localhost:10000
 ```
