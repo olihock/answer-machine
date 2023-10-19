@@ -15,4 +15,4 @@ ui = gradio.Interface(fn=search_for_answer,
 
 # The FastAPI usage is a workaround for deployment purposes.
 app = FastAPI()
-app = gradio.mount_gradio_app(app, ui, path='/')
+app = gradio.mount_gradio_app(app, ui, path='/answer-machine')

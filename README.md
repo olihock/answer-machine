@@ -12,30 +12,20 @@ Configure following environment variables in an ```.env``` file in the project r
 | OPENAI_API_KEY      | OpenAI API Key to access ChatGPT                                                                         |
 
 ### Deployment
-
-**Start Weaviate vector database**
 ```shell
-cd weaviate
 docker compose up -d && docker compose logs -f weaviate
 docker compose down
 ```
+**Test app instance**
+```shell
+open http://localhost:10000
+```
+
+## Development
+
 **Create Python environment**
 ```shell
 python3 -m venv venv
 source venv/bin/activate
 deactivate
-```
-**Build Docker image**
-```shell
-docker build -t answer-machine .
-```
-**Maintain Docker container**
-```shell
-docker run --it -d --rm -p 10000:7860 answer-machine
-docker stop answer-machine
-docker start answer-machine
-```
-**Test app instance**
-```shell
-open http://localhost:10000
 ```
