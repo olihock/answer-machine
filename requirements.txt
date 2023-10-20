@@ -10,3 +10,4 @@ uvicorn~=0.23.2
 fastapi~=0.104.0
 requests~=2.31.0
 oauth2client
+werkzeug~=3.0.0
