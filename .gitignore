@@ -7,3 +7,4 @@ out/
 data/
 .env
 *.env
+/openid-config.json
