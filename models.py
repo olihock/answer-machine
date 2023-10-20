@@ -17,3 +17,4 @@ class UploadFile(Base):
     user_id: Mapped[uuid] = mapped_column(UUID(as_uuid=True))
     category: Mapped[str] = mapped_column(String)
     filename: Mapped[str] = mapped_column(String)
+    status: Mapped[str] = mapped_column(String)

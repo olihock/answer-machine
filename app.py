@@ -6,7 +6,7 @@ from flask import Flask, render_template, request
 from flask_oidc import OpenIDConnect
 from sqlalchemy.orm import Session
 from werkzeug.utils import secure_filename
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, select
 
 from models import Base, UploadFile
 
@@ -64,8 +64,19 @@ def profile():
 @app.route('/data_import')
 @oidc.require_login
 def data_import():
-    user_info = oidc.user_getinfo(['email', 'openid_id'])
-    return render_template('data_import.html', base_url=base_url)
+    user_id = oidc.user_getinfo(['sub']).get('sub')
+
+    with Session(engine) as session:
+        stmt = select(UploadFile).where(UploadFile.user_id == user_id)
+        upload_files = session.execute(stmt)
+        upload_files_model = []
+        for upload_file in upload_files:
+            upload_files_model.append({
+                "category": upload_file[0].category,
+                "filename": upload_file[0].filename,
+                "status": upload_file[0].status
+            })
+    return render_template('data_import.html', base_url=base_url, upload_files=upload_files_model)
 
 
 @app.route('/upload', methods=['GET', 'POST'])
@@ -77,14 +88,19 @@ def upload():
         file.save(os.path.join(app.instance_path, 'upload_files', filename))
 
         with Session(engine) as session:
-            # sub is the uuid from keycloak
-            user_id = oidc.user_getinfo(['sub']).get('sub')
-            category = request.form.get('category')
-            upload_file = UploadFile(user_id=user_id, category=category, filename=filename)
-            session.add(upload_file)
-            session.commit()
-
-        return 'File uploaded successfully'
+            stmt = select(UploadFile).where(UploadFile.filename == filename)
+            upload_files = session.execute(stmt).all()
+            if len(upload_files) == 0:
+                # sub is the uuid from keycloak
+                user_id = oidc.user_getinfo(['sub']).get('sub')
+                category = request.form.get('category')
+                status = "uploaded"
+                upload_file = UploadFile(user_id=user_id, category=category, filename=filename, status=status)
+                session.add(upload_file)
+                session.commit()
+                return 'File uploaded successfully.'
+            else:
+                return 'File already uploaded.'
 
 
 @app.route('/logout')
