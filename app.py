@@ -4,7 +4,11 @@ import logging
 from dotenv import load_dotenv
 from flask import Flask, render_template, request
 from flask_oidc import OpenIDConnect
+from sqlalchemy.orm import Session
 from werkzeug.utils import secure_filename
+from sqlalchemy import create_engine
+
+from models import Base, UploadFile
 
 load_dotenv()
 base_url = os.environ['APP_BASE_URL']
@@ -22,9 +26,19 @@ app.config.update({
     'OIDC_OPENID_REALM': os.environ['FLASK_OIDC_OPENID_REALM'],
 })
 
+oidc = OpenIDConnect(app)
+
 os.makedirs(os.path.join(app.instance_path, 'upload_files'), exist_ok=True)
 
-oidc = OpenIDConnect(app)
+filedb_user = os.environ['SQLALCHEMY_FILEDB_USER']
+filedb_password = os.environ['SQLALCHEMY_FILEDB_PASSWORD']
+filedb_host = os.environ['SQLALCHEMY_FILEDB_HOST']
+filedb_port = os.environ['SQLALCHEMY_FILEDB_PORT']
+filedb_database = os.environ['SQLALCHEMY_FILEDB_DATABASE']
+filedb_url = f'postgresql+psycopg2://{filedb_user}:{filedb_password}@{filedb_host}:{filedb_port}/{filedb_database}'
+logging.debug(filedb_url)
+engine = create_engine(filedb_url, echo=True)
+Base.metadata.create_all(engine)
 
 
 @app.route('/')
@@ -40,23 +54,36 @@ def home():
 @app.route('/profile')
 @oidc.require_login
 def profile():
-    info = oidc.user_getinfo(['email', 'openid_id'])
-    return ('Hello, %s (%s)! <a href="/">Return</a>' %
-            (info.get('email'), info.get('openid_id')))
+    user_info = oidc.user_getinfo(['sub', 'name', 'email'])
+    return render_template('user_profile.html',
+                           id=user_info.get('sub'),
+                           name=user_info.get('name'),
+                           email=user_info.get('email'))
 
 
 @app.route('/data_import')
 @oidc.require_login
 def data_import():
-    email = oidc.user_getfield('email')
+    user_info = oidc.user_getinfo(['email', 'openid_id'])
     return render_template('data_import.html', base_url=base_url)
 
 
 @app.route('/upload', methods=['GET', 'POST'])
+@oidc.require_login
 def upload():
     if request.method == 'POST':
         file = request.files['file']
-        file.save(os.path.join(app.instance_path, 'upload_files', secure_filename(file.filename)))
+        filename = secure_filename(file.filename)
+        file.save(os.path.join(app.instance_path, 'upload_files', filename))
+
+        with Session(engine) as session:
+            # sub is the uuid from keycloak
+            user_id = oidc.user_getinfo(['sub']).get('sub')
+            category = request.form.get('category')
+            upload_file = UploadFile(user_id=user_id, category=category, filename=filename)
+            session.add(upload_file)
+            session.commit()
+
         return 'File uploaded successfully'
 
 

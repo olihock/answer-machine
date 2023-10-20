@@ -1,5 +1,16 @@
 version: '3.4'
 services:
+  filedb:
+    image: postgres:15.4
+    container_name: filedb
+    ports:
+      - "5433:5432"
+    env_file:
+      - .env
+    volumes:
+      - ~/ws/filedb:/var/lib/postgresql/data
+    networks:
+      - filedb-network
   answer-machine:
     build:
       dockerfile: Dockerfile
@@ -10,3 +21,4 @@ services:
 networks:
   weaviate_weaviate-network:
     external: true
+  filedb-network:

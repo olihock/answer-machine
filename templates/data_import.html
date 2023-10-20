@@ -2,7 +2,12 @@
 <body>
 <form action="{{ base_url }}/upload" method="POST"
       enctype="multipart/form-data">
-    <input type="file" name="file"/>
+    <input type="file" name="file" accept="application/pdf"/>
+    <br>
+    <label title="Kategorie">
+        <input name="category" >
+    </label>
+    <br>
     <label>
         <input type="submit" value="Upload now"/>
     </label>
