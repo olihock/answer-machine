@@ -1,5 +1,13 @@
 # Answer Machine
 
+## Authentication
+Curity OpenID Connect server is used. 
+**Set admin password**
+```shell
+export MYSQL_ROOT_PASSWORD=*****************
+export CURITY_ADMIN_PASSWORD=****************
+```
+
 ## Operations
 
 ### Configuration

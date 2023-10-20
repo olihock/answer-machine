@@ -1,0 +1,26 @@
+version: '3.4'
+services:
+  postgres:
+    image: postgres:15.4
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    env_file:
+      - postgres.env
+    volumes:
+      - ~/ws/postgres-data:/var/lib/postgresql/data
+    networks:
+      - keycloak-network
+  keycloak:
+    image: jboss/keycloak
+    container_name: keycloak
+    ports:
+      - "10001:8080"
+    env_file:
+      - keycloak.env
+    depends_on:
+      - postgres
+    networks:
+      - keycloak-network
+networks:
+  keycloak-network:
