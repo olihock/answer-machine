@@ -16,19 +16,19 @@
     <div class="container-fluid">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
             <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('answer') }}">Answer</a>
+                <a class="nav-link" href="{{url_for('answer')}}">Answer</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="/documents">Dokumente</a>
+                <a class="nav-link" href="{{url_for('documents')}}">Dokumente</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="/import">Import</a>
+                <a class="nav-link" href="{{url_for('data_import')}}">Import</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="/profile">Profile</a>
+                <a class="nav-link" href="{{url_for('profile')}}">Profile</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="/logout">Logout</a>
+                <a class="nav-link" href="{{url_for('logout')}}">Logout</a>
             </li>
         </ul>
     </div>

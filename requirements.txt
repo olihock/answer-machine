@@ -5,11 +5,9 @@ pypdf2
 python-dotenv
 weaviate-client
 flask
-flask_nav
-waitress
-uvicorn
 fastapi
 requests
-oauth2client
 werkzeug
 SQLAlchemy
+wheel
+gunicorn

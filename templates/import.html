@@ -11,7 +11,7 @@
 {% endblock %}
 
 {% block content %}
-<form action="{{base_url}}/upload" method="POST" enctype="multipart/form-data">
+<form action="{{url_for('upload')}}" method="POST" enctype="multipart/form-data">
     <div class="mb-3">
         <label for="file_upload" class="form-label">Lade ein <strong>neues Dokument</strong> hoch:</label>
         <input class="form-control" type="file" id="file_upload" accept="application/pdf" name="file">

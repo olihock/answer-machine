@@ -11,7 +11,6 @@ from werkzeug.utils import secure_filename
 from models import Base, UploadFile
 
 load_dotenv()
-base_url = os.environ['APP_BASE_URL']
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -20,7 +19,13 @@ app.config.update({
     'SECRET_KEY': os.environ['FLASK_SECRET_KEY'],
     'TESTING': True,
     'DEBUG': True,
-    'OIDC_CLIENT_SECRETS': 'openid-config.json',
+    'OIDC_CLIENT_SECRETS': {
+        "web": {
+            "issuer": os.environ['OIDC_ISSUER'],
+            "client_id": os.environ['OIDC_CLIENT_ID'],
+            "client_secret": os.environ['OIDC_CLIENT_SECRET']
+        }
+    },
     'OIDC_ID_TOKEN_COOKIE_SECURE': False,
     'OIDC_USER_INFO_ENABLED': True,
     'OIDC_OPENID_REALM': os.environ['FLASK_OIDC_OPENID_REALM'],
@@ -72,7 +77,7 @@ def documents():
 @app.route('/import')
 @oidc.require_login
 def data_import():
-    return render_template('import.html', base_url=base_url)
+    return render_template('import.html')
 
 
 @app.route('/upload', methods=['GET', 'POST'])
@@ -111,9 +116,9 @@ def profile():
 
 @app.route('/logout')
 def logout():
+    logging.debug("Logging out...")
     oidc.logout()
-    return 'Tschüss <a href="/">Return</a>'
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(host='0.0.0.0')
