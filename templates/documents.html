@@ -1,0 +1,44 @@
+{% extends "layout.html" %}
+
+{% block title %}Import{% endblock %}
+
+{% block head %}
+{{ super() }}
+{% endblock %}
+
+{% block navbar %}
+{{ super() }}
+{% endblock %}
+
+{% block content %}
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th scope="col">#</th>
+        <th scope="col">Kategorie</th>
+        <th scope="col">Datei</th>
+        <th scope="col">Status</th>
+        <th scope="col">Aktion</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for upload_file in upload_files %}
+    <tr>
+        <td>{{upload_file.id}}</td>
+        <td>{{upload_file.category}}</td>
+        <td>{{upload_file.filename}}</td>
+        <td>
+            {% if upload_file.status == 'hochgeladen' %}
+            <span class="badge text-bg-warning">{{upload_file.status}}</span>
+            {% elif upload_file.status == 'importiert' %}
+            <span class="badge text-bg-success">{{upload_file.status}}</span>
+            {% else %}
+            <span class="badge text-bg-light">{{upload_file.status}}</span>
+            {% endif %}
+        </td>
+        <td></td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

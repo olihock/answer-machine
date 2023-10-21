@@ -5,8 +5,8 @@ from dotenv import load_dotenv
 from flask import Flask, render_template, request
 from flask_oidc import OpenIDConnect
 from sqlalchemy.orm import Session
-from werkzeug.utils import secure_filename
 from sqlalchemy import create_engine, select
+from werkzeug.utils import secure_filename
 
 from models import Base, UploadFile
 
@@ -27,7 +27,6 @@ app.config.update({
 })
 
 oidc = OpenIDConnect(app)
-
 os.makedirs(os.path.join(app.instance_path, 'upload_files'), exist_ok=True)
 
 filedb_user = os.environ['SQLALCHEMY_FILEDB_USER']
@@ -43,40 +42,37 @@ Base.metadata.create_all(engine)
 
 @app.route('/')
 def home():
-    if oidc.user_loggedin:
-        return ('Hi %s, <a href="/profile">See profile</a> '
-                '<a href="/logout">Log out</a>') % \
-            oidc.user_getfield('email')
-    else:
-        return 'Welcome anonymous, <a href="/profile">Log in</a>'
+    return render_template('home.html')
 
 
-@app.route('/profile')
+@app.route('/answer')
 @oidc.require_login
-def profile():
-    user_info = oidc.user_getinfo(['sub', 'name', 'email'])
-    return render_template('user_profile.html',
-                           id=user_info.get('sub'),
-                           name=user_info.get('name'),
-                           email=user_info.get('email'))
+def answer():
+    return render_template('answer.html')
 
 
-@app.route('/data_import')
+@app.route('/documents')
 @oidc.require_login
-def data_import():
+def documents():
     user_id = oidc.user_getinfo(['sub']).get('sub')
-
     with Session(engine) as session:
         stmt = select(UploadFile).where(UploadFile.user_id == user_id)
         upload_files = session.execute(stmt)
         upload_files_model = []
         for upload_file in upload_files:
             upload_files_model.append({
+                "id": upload_file[0].id,
                 "category": upload_file[0].category,
                 "filename": upload_file[0].filename,
                 "status": upload_file[0].status
             })
-    return render_template('data_import.html', base_url=base_url, upload_files=upload_files_model)
+    return render_template('documents.html', upload_files=upload_files_model)
+
+
+@app.route('/import')
+@oidc.require_login
+def data_import():
+    return render_template('import.html', base_url=base_url)
 
 
 @app.route('/upload', methods=['GET', 'POST'])
@@ -94,7 +90,7 @@ def upload():
                 # sub is the uuid from keycloak
                 user_id = oidc.user_getinfo(['sub']).get('sub')
                 category = request.form.get('category')
-                status = "uploaded"
+                status = "hochgeladen"
                 upload_file = UploadFile(user_id=user_id, category=category, filename=filename, status=status)
                 session.add(upload_file)
                 session.commit()
@@ -103,10 +99,20 @@ def upload():
                 return 'File already uploaded.'
 
 
+@app.route('/profile')
+@oidc.require_login
+def profile():
+    user_info = oidc.user_getinfo(['sub', 'name', 'email'])
+    return render_template('profile.html',
+                           id=user_info.get('sub'),
+                           name=user_info.get('name'),
+                           email=user_info.get('email'))
+
+
 @app.route('/logout')
 def logout():
     oidc.logout()
-    return 'Hi, you have been logged out! <a href="/">Return</a>'
+    return 'Tschüss <a href="/">Return</a>'
 
 
 if __name__ == '__main__':

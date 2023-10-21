@@ -1,0 +1,33 @@
+{% extends "layout.html" %}
+
+{% block title %}Profile{% endblock %}
+
+{% block head %}
+{{ super() }}
+{% endblock %}
+
+{% block navbar %}
+{{ super() }}
+{% endblock %}
+
+{% block content %}
+<div class="card" style="width: 18rem;">
+    <img src="https://openclipart.org/download/190113/1389952697.svg" class="card-img-top" alt="Your avatar goes here.">
+    <div class="card-body">
+        <h5 class="card-title">{{name}}</h5>
+        <p class="card-text">
+            Leidenschaftlich daran interessiert, die Grenzen der generativen KI zu erkunden
+            und ihre kreativen Möglichkeiten auszuschöpfen.
+        </p>
+    </div>
+    <ul class="list-group list-group-flush">
+        <li class="list-group-item">{{email}}</li>
+        <li class="list-group-item">{{id}}</li>
+    </ul>
+    <div class="card-body">
+        <a href="https://chat.openai.com/share/ac3635e8-d3bd-45d7-b0a9-4c9a685da9af" class="card-link" target="_blank">
+            Über mich
+        </a>
+    </div>
+</div>
+{% endblock %}
