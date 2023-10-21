@@ -2,6 +2,12 @@
 
 ## Operations
 
+### OpenID Connect Provider
+Install and configure an OpenID Connect Provider (e.g. Keycloak is used here). 
+1. Create a realm ```production```.
+2. Configure an SMTP server for this realm (for user registration). 
+3. Within this realm create a client ```answer-machine```.
+
 ### File Database
 ```shell
 sudo apt-get install -y postgresql-client
