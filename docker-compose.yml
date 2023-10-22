@@ -6,13 +6,12 @@ services:
     ports:
       - "10000:5000"
     networks:
+      - answer-machine
       - weaviate_weaviate-network
       - documentdb_documentdb-network
-      - keycloak_keycloak-network
 networks:
+  answer-machine:
   weaviate_weaviate-network:
     external: true
   documentdb_documentdb-network:
-    external: true
-  keycloak_keycloak-network:
     external: true

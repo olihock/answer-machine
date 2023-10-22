@@ -19,17 +19,12 @@ app.config.update({
     'SECRET_KEY': os.environ['FLASK_SECRET_KEY'],
     'TESTING': True,
     'DEBUG': True,
-    'OIDC_CLIENT_SECRETS': {
-        "web": {
-            "issuer": os.environ['OIDC_ISSUER'],
-            "client_id": os.environ['OIDC_CLIENT_ID'],
-            "client_secret": os.environ['OIDC_CLIENT_SECRET']
-        }
-    },
+    'OIDC_CLIENT_SECRETS': 'oidc-config.json',
     'OIDC_ID_TOKEN_COOKIE_SECURE': False,
     'OIDC_USER_INFO_ENABLED': True,
     'OIDC_OPENID_REALM': os.environ['FLASK_OIDC_OPENID_REALM'],
 })
+app.config["OIDC_SCOPES"] = ["openid", "email", "profile"]
 
 oidc = OpenIDConnect(app)
 os.makedirs(os.path.join(app.instance_path, 'upload_files'), exist_ok=True)
@@ -123,4 +118,4 @@ def logout():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0')
+    app.run()

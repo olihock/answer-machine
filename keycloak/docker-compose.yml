@@ -12,9 +12,14 @@ services:
       - keycloak-network
   keycloak:
     image: quay.io/keycloak/keycloak:22.0.4
-    # command: [ start-dev | start --proxy=edge ]
-    command: ${KEYCLOAK_START_MODE}
     container_name: keycloak
+    # https://www.keycloak.org/server/reverseproxy
+    command:
+      - "start"
+      - "--proxy"
+      - "edge"
+      - "--hostname-strict=false"
+      - "--http-relative-path=/keycloak"
     ports:
       - "10001:8080"
     env_file:

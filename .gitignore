@@ -7,5 +7,6 @@ out/
 data/
 .env
 *.env
-/openid-config.json
 /instance/
+/nginx/nginx.conf
+/oidc-config.json
