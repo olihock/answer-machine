@@ -7,7 +7,7 @@ services:
     env_file:
       - documentdb.env
     volumes:
-      - ~/ws/documentdb:/var/lib/postgresql/data
+      - ~/ws/olihock/documentdb-volume:/var/lib/postgresql/data
     networks:
       - documentdb-network
 networks:

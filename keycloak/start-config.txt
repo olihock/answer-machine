@@ -1,2 +1,2 @@
 # [ start-dev | start --proxy=edge ]
-export KEYCLOAK_START_MODE=start --proxy=edge
+export KEYCLOAK_START_MODE='start --proxy=edge'
