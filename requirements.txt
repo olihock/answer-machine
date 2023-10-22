@@ -1,13 +1,14 @@
-gradio
 openai
 tiktoken
 pypdf2
 python-dotenv
 weaviate-client
 flask
+flask_oidc
 fastapi
 requests
 werkzeug
 SQLAlchemy
 wheel
 gunicorn
+psycopg2-binary

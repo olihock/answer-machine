@@ -34,14 +34,16 @@ app.config.update({
 oidc = OpenIDConnect(app)
 os.makedirs(os.path.join(app.instance_path, 'upload_files'), exist_ok=True)
 
-filedb_user = os.environ['SQLALCHEMY_FILEDB_USER']
-filedb_password = os.environ['SQLALCHEMY_FILEDB_PASSWORD']
-filedb_host = os.environ['SQLALCHEMY_FILEDB_HOST']
-filedb_port = os.environ['SQLALCHEMY_FILEDB_PORT']
-filedb_database = os.environ['SQLALCHEMY_FILEDB_DATABASE']
-filedb_url = f'postgresql+psycopg2://{filedb_user}:{filedb_password}@{filedb_host}:{filedb_port}/{filedb_database}'
-logging.debug(filedb_url)
-engine = create_engine(filedb_url, echo=True)
+documentdb_user = os.environ['DOCUMENTDB_USER']
+documentdb_password = os.environ['DOCUMENTDB_PASSWORD']
+documentdb_host = os.environ['DOCUMENTDB_HOST']
+documentdb_port = os.environ['DOCUMENTDB_PORT']
+documentdb_database = os.environ['DOCUMENTDB_DATABASE']
+documentdb_url = \
+    (f'postgresql://'
+     f'{documentdb_user}:{documentdb_password}@{documentdb_host}:{documentdb_port}/{documentdb_database}')
+logging.debug(documentdb_url)
+engine = create_engine(documentdb_url, echo=True)
 Base.metadata.create_all(engine)
 
 

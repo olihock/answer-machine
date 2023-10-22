@@ -1,0 +1,14 @@
+version: '3.4'
+services:
+  documentdb:
+    image: postgres:15.4
+    ports:
+      - "5433:5432"
+    env_file:
+      - documentdb.env
+    volumes:
+      - ~/ws/documentdb:/var/lib/postgresql/data
+    networks:
+      - documentdb-network
+networks:
+  documentdb-network:
