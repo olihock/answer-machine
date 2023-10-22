@@ -1,25 +1,26 @@
 version: '3.4'
 services:
-  postgres:
+  keycloakdb:
     image: postgres:15.4
-    container_name: postgres
     ports:
       - "5432:5432"
     env_file:
       - postgres.env
     volumes:
-      - ~/ws/postgres-data:/var/lib/postgresql/data
+      - ~/ws/olihock/keycloakdb-volume:/var/lib/postgresql/data
     networks:
       - keycloak-network
   keycloak:
-    image: jboss/keycloak
+    image: quay.io/keycloak/keycloak:22.0.4
+    # command: [ start-dev | start --proxy=edge ]
+    command: ${KEYCLOAK_START_MODE}
     container_name: keycloak
     ports:
       - "10001:8080"
     env_file:
       - keycloak.env
     depends_on:
-      - postgres
+      - keycloakdb
     networks:
       - keycloak-network
 networks:

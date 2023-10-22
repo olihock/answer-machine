@@ -8,8 +8,11 @@ services:
     networks:
       - weaviate_weaviate-network
       - documentdb_documentdb-network
+      - keycloak_keycloak-network
 networks:
   weaviate_weaviate-network:
     external: true
   documentdb_documentdb-network:
+    external: true
+  keycloak_keycloak-network:
     external: true
