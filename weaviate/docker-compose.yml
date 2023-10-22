@@ -14,12 +14,10 @@ services:
     env_file:
       - weaviate.env
     volumes:
-      - weaviate-data:/weaviate-data
+      - ~/ws/olihock/weaviate-volume:/weaviate-data
     depends_on:
       - t2v-transformers
     networks:
       - weaviate-network
-volumes:
-  weaviate-data:
 networks:
   weaviate-network:
