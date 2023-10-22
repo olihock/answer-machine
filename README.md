@@ -2,6 +2,9 @@
 
 ## Operations
 
+### Docker
+From within a Docker container to Linux host: ```172.17.0.1```
+
 ### OpenID Connect Provider
 Install and configure an OpenID Connect Provider (e.g. Keycloak is used here). 
 1. Create a realm ```production```.

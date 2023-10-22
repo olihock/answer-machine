@@ -8,11 +8,11 @@ services:
       - "443:443"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
-    networks:
-      - keycloak_keycloak-network
-      - answer-machine_answer-machine-network
-networks:
-  keycloak_keycloak-network:
-    external: true
-  answer-machine_answer-machine-network:
-    external: true
+#    networks:
+#      - keycloak_keycloak-network
+#      - answer-machine_answer-machine-network
+#networks:
+#  keycloak_keycloak-network:
+#    external: true
+#  answer-machine_answer-machine-network:
+#    external: true
