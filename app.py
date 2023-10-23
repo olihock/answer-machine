@@ -7,6 +7,7 @@ from flask_oidc import OpenIDConnect
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine, select
 from werkzeug.utils import secure_filename
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 from models import Base, UploadFile
 
@@ -16,6 +17,8 @@ logging.basicConfig(level=logging.DEBUG)
 os.system('curl -i https://integ.dynv6.net/keycloak/realms/integration/.well-known/openid-configuration')
 
 app = Flask(__name__)
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)
+
 app.config.update({
     'SECRET_KEY': os.environ['FLASK_SECRET_KEY'],
     'TESTING': True,
@@ -24,6 +27,7 @@ app.config.update({
     'OIDC_ID_TOKEN_COOKIE_SECURE': False,
     'OIDC_USER_INFO_ENABLED': True,
     'OIDC_OPENID_REALM': os.environ['FLASK_OIDC_OPENID_REALM'],
+#    'OVERWRITE_REDIRECT_URI': 'https://integ.dynv6.net/answer-machine/profile'
 })
 app.config["OIDC_SCOPES"] = ["openid", "email", "profile"]
 
