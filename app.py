@@ -13,6 +13,7 @@ from models import Base, UploadFile
 load_dotenv()
 
 logging.basicConfig(level=logging.DEBUG)
+os.system('curl -i https://integ.dynv6.net/keycloak/realms/integration/.well-known/openid-configuration')
 
 app = Flask(__name__)
 app.config.update({

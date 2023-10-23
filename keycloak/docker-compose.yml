@@ -18,7 +18,9 @@ services:
       - "start"
       - "--proxy"
       - "edge"
-      - "--hostname-strict=false"
+      - "--hostname=integ.dynv6.net"
+      - "--hostname-debug=true" # open https://integ.dynv6.net/keycloak/realms/master/hostname-debug
+      - "--hostname-strict=true"
       - "--http-relative-path=/keycloak"
     ports:
       - "10001:8080"

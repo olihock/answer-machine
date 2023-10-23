@@ -1,0 +1,13 @@
+{
+  "web": {
+    "client_id": "answer-machine",
+    "client_secret": "qDwurEoBfAHdmhghk7lm2vbrYS3wVnrq",
+    "auth_uri": "http://ithoc:10001/keycloak/realms/development/protocol/openid-connect/auth",
+    "token_uri": "http://ithoc:10001/keycloak/realms/development/protocol/openid-connect/token",
+    "userinfo_uri": "http://ithoc:10001/keycloak/realms/development/protocol/openid-connect/userinfo",
+    "issuer": "http://ithoc:10001/keycloak/realms/development",
+    "redirect_uris": [
+      "*"
+    ]
+  }
+}
