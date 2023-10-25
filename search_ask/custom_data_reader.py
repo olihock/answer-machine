@@ -2,9 +2,9 @@ import os
 from PyPDF2 import PdfReader
 
 
-def slice_to_pages(file):
+def slice_to_pages(filename):
     pages = []
-    with open(file.name, mode="rb") as file_content:
+    with open(filename, mode="rb") as file_content:
         pdf_reader = PdfReader(file_content)
         for page in pdf_reader.pages:
             content = page.extract_text()

@@ -14,14 +14,7 @@ services:
     image: quay.io/keycloak/keycloak:22.0.4
     container_name: keycloak
     # https://www.keycloak.org/server/reverseproxy
-    command:
-      - "start"
-      - "--proxy"
-      - "edge"
-      - "--hostname=integ.dynv6.net"
-      - "--hostname-debug=true" # open https://integ.dynv6.net/keycloak/realms/master/hostname-debug
-      - "--hostname-strict=true"
-      - "--http-relative-path=/keycloak"
+    command: ${KEYCLOAK_COMMAND}
     ports:
       - "10001:8080"
     env_file:

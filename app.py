@@ -10,11 +10,13 @@ from werkzeug.utils import secure_filename
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 from models import Base, UploadFile
+from search_ask.custom_data_reader import slice_to_pages
+from search_ask.weaviate_client import feed_vector_database, is_class_exists, create_class
+
 
 load_dotenv()
 
 logging.basicConfig(level=logging.DEBUG)
-os.system('curl -i https://integ.dynv6.net/keycloak/realms/integration/.well-known/openid-configuration')
 
 app = Flask(__name__)
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)
@@ -27,7 +29,7 @@ app.config.update({
     'OIDC_ID_TOKEN_COOKIE_SECURE': False,
     'OIDC_USER_INFO_ENABLED': True,
     'OIDC_OPENID_REALM': os.environ['FLASK_OIDC_OPENID_REALM'],
-#    'OVERWRITE_REDIRECT_URI': 'https://integ.dynv6.net/answer-machine/profile'
+    #    'OVERWRITE_REDIRECT_URI': 'https://integ.dynv6.net/answer-machine/profile'
 })
 app.config["OIDC_SCOPES"] = ["openid", "email", "profile"]
 
@@ -62,6 +64,11 @@ def answer():
 @oidc.require_login
 def documents():
     user_id = oidc.user_getinfo(['sub']).get('sub')
+    upload_files_model = load_documents(user_id)
+    return render_template('documents.html', upload_files=upload_files_model)
+
+
+def load_documents(user_id):
     with Session(engine) as session:
         stmt = select(UploadFile).where(UploadFile.user_id == user_id)
         upload_files = session.execute(stmt)
@@ -73,13 +80,38 @@ def documents():
                 "filename": upload_file[0].filename,
                 "status": upload_file[0].status
             })
-    return render_template('documents.html', upload_files=upload_files_model)
+    return upload_files_model
 
 
 @app.route('/import')
 @oidc.require_login
 def data_import():
     return render_template('import.html')
+
+
+@app.route('/documents/<int:file_id>', methods=['GET', 'POST'])
+@oidc.require_login
+def index(file_id):
+    logging.debug(f"file_id: {file_id}")
+    pages = []
+    with Session(engine) as session:
+        user_id = oidc.user_getinfo(['sub']).get('sub')
+        upload_files_model = load_documents(user_id)
+
+        stmt = select(UploadFile).where(file_id == UploadFile.id)
+        file = session.execute(stmt).first()
+        filename = os.path.join(app.instance_path, 'upload_files', file[0].filename)
+        pages = slice_to_pages(filename)
+
+        if not is_class_exists(file[0].category):
+            create_class(file[0].category)
+        feed_vector_database(pages, file[0].category, file[0].user_id, file[0].id, filename, 10)
+
+        file[0].status = "indexiert"
+        session.add(file[0])
+        session.commit()
+
+    return render_template('documents.html', upload_files=upload_files_model)
 
 
 @app.route('/upload', methods=['GET', 'POST'])

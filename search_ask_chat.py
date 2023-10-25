@@ -16,7 +16,7 @@ def search_for_answer(file, question: str):
 
     Model and transformer are configured through environment variables as described in the README.md.
     """
-    class_name = build_class_name(file)
+    class_name = build_filename(file)
     if not is_class_exists(class_name):
         create_class(class_name)
         pages = slice_to_pages(file)
@@ -29,7 +29,7 @@ def search_for_answer(file, question: str):
     return answer
 
 
-def build_class_name(file):
+def build_filename(file):
     """
     Replace all special characters by an underscore as Weaviate class names allow
     regular characters only.

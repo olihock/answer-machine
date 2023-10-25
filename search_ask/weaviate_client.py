@@ -26,7 +26,7 @@ def create_class(class_name: str):
     client.schema.create_class(clazz)
 
 
-def feed_vector_database(text_list, schema_name, batch_size=100):
+def feed_vector_database(text_list, schema_name, user_id, file_id, filename, batch_size=10):
     """
     Take a list of texts and a schema name to feed the vector database in batch mode.
     The vector is created by the transformer that has been configured when running
@@ -38,21 +38,23 @@ def feed_vector_database(text_list, schema_name, batch_size=100):
         for text in text_list:
             i = i + 1
             properties = {
-                "no": i,
+                "user_id": str(user_id),
+                "file_id": file_id,
+                "filename": filename,
+                "chunk_no": f"{i} of {len(text_list)}",
                 "text": text
             }
             batch.add_data_object(properties, schema_name)
 
 
-def search_similar_texts(class_name: str, question: str, limit=10):
+def search_similar_texts(class_name: str, question: str):
     """
     Search similar texts to the question. The nearest documents
     according the vectors in descending order are returned.
     """
     response = (
         client.query
-        .get(class_name, ["no", "text"])
+        .get(class_name, ["user_id", "file_id", "filename", "chunk_no", "text"])
         .with_near_text({"concepts": [question]})
-        .with_limit(limit)
         .do())
     return response
