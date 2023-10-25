@@ -16,7 +16,8 @@ def num_tokens(text: str, model: str = GPT_MODEL) -> int:
 
 def engineer_prompt(class_name, question, similarities, token_budget=(4096-512)):
     introduction = ("Use the below pages to answer the subsequent question. "
-                    "If the answer cannot be found in the pages, write \"I could not find an appropriate answer.\".")
+                    "If the answer cannot be found in the pages, "
+                    "write \"Ich kann keine passende Antwort in den Dokumenten finden.\".")
     prompt = introduction
     for page in similarities['data']['Get'][class_name]:
         page_text = page['text']

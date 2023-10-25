@@ -1,8 +1,9 @@
 import os
 import logging
+import re
 
 from dotenv import load_dotenv
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, flash, redirect, url_for
 from flask_oidc import OpenIDConnect
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine, select
@@ -12,6 +13,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from models import Base, UploadFile
 from search_ask.custom_data_reader import slice_to_pages
 from search_ask.weaviate_client import feed_vector_database, is_class_exists, create_class
+from search_ask.find_answer import search_for_answer
 
 
 load_dotenv()
@@ -29,7 +31,6 @@ app.config.update({
     'OIDC_ID_TOKEN_COOKIE_SECURE': False,
     'OIDC_USER_INFO_ENABLED': True,
     'OIDC_OPENID_REALM': os.environ['FLASK_OIDC_OPENID_REALM'],
-    #    'OVERWRITE_REDIRECT_URI': 'https://integ.dynv6.net/answer-machine/profile'
 })
 app.config["OIDC_SCOPES"] = ["openid", "email", "profile"]
 
@@ -51,20 +52,52 @@ Base.metadata.create_all(engine)
 
 @app.route('/')
 def home():
+    # noinspection PyUnresolvedReferences
     return render_template('home.html')
 
 
-@app.route('/answer')
+@app.route('/chat', methods=['GET'])
 @oidc.require_login
-def answer():
-    return render_template('answer.html')
+def chat_get():
+    # noinspection PyDeprecation
+    user_id = oidc.user_getinfo(['sub']).get('sub')
+
+    with Session(engine) as session:
+        stmt = select(UploadFile).where(UploadFile.user_id == user_id).distinct(UploadFile.category)
+        upload_files = session.execute(stmt)
+        categories = []
+        for upload_file in upload_files:
+            categories.append(upload_file[0].category)
+
+        # noinspection PyUnresolvedReferences
+        return render_template('chat.html', categories=categories)
+
+
+@app.route('/chat', methods=['POST'])
+@oidc.require_login
+def chat_post():
+    user_question = request.form.get("user_question")
+    logging.debug(f"question: {user_question}")
+    category = request.form.get("category")
+    logging.debug(f"category: {category}")
+
+    if user_question:
+        answer = search_for_answer(category, user_question)
+    else:
+        flash('Bitte stelle deine Frage.')
+        return redirect(url_for('chat_post'))
+
+    # noinspection PyUnresolvedReferences
+    return render_template('chat.html', answer=answer)
 
 
 @app.route('/documents')
 @oidc.require_login
 def documents():
+    # noinspection PyDeprecation
     user_id = oidc.user_getinfo(['sub']).get('sub')
     upload_files_model = load_documents(user_id)
+    # noinspection PyUnresolvedReferences
     return render_template('documents.html', upload_files=upload_files_model)
 
 
@@ -86,6 +119,7 @@ def load_documents(user_id):
 @app.route('/import')
 @oidc.require_login
 def data_import():
+    # noinspection PyUnresolvedReferences
     return render_template('import.html')
 
 
@@ -95,6 +129,7 @@ def index(file_id):
     logging.debug(f"file_id: {file_id}")
     pages = []
     with Session(engine) as session:
+        # noinspection PyDeprecation
         user_id = oidc.user_getinfo(['sub']).get('sub')
         upload_files_model = load_documents(user_id)
 
@@ -114,6 +149,7 @@ def index(file_id):
 
             upload_files_model = load_documents(user_id)
 
+    # noinspection PyUnresolvedReferences
     return render_template('documents.html', upload_files=upload_files_model)
 
 
@@ -130,9 +166,14 @@ def upload():
             upload_files = session.execute(stmt).all()
             if len(upload_files) == 0:
                 # sub is the uuid from keycloak
+                # noinspection PyDeprecation
                 user_id = oidc.user_getinfo(['sub']).get('sub')
+
                 category = request.form.get('category')
+                category = re.sub("[^A-Za-z0-9]+", "_", category).capitalize()
+
                 status = "hochgeladen"
+
                 upload_file = UploadFile(user_id=user_id, category=category, filename=filename, status=status)
                 session.add(upload_file)
                 session.commit()
@@ -144,7 +185,9 @@ def upload():
 @app.route('/profile')
 @oidc.require_login
 def profile():
+    # noinspection PyDeprecation
     user_info = oidc.user_getinfo(['sub', 'name', 'email'])
+    # noinspection PyUnresolvedReferences
     return render_template('profile.html',
                            id=user_info.get('sub'),
                            name=user_info.get('name'),
