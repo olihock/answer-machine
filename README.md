@@ -1,5 +1,10 @@
 # Answer Machine
 
+## Application States
+Documents have a status field that can have the following values:
+- ```hochgeladen```: Document has been uploaded and is waiting to be processed.
+- ```durchsuchbar```: Document has been processed and is ready to be queried.
+
 ## Operations
 
 ### Docker

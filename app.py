@@ -100,16 +100,19 @@ def index(file_id):
 
         stmt = select(UploadFile).where(file_id == UploadFile.id)
         file = session.execute(stmt).first()
-        filename = os.path.join(app.instance_path, 'upload_files', file[0].filename)
-        pages = slice_to_pages(filename)
+        if file[0].status == "hochgeladen":
+            filename = os.path.join(app.instance_path, 'upload_files', file[0].filename)
+            pages = slice_to_pages(filename)
 
-        if not is_class_exists(file[0].category):
-            create_class(file[0].category)
-        feed_vector_database(pages, file[0].category, file[0].user_id, file[0].id, filename, 10)
+            if not is_class_exists(file[0].category):
+                create_class(file[0].category)
+            feed_vector_database(pages, file[0].category, file[0].user_id, file[0].id, filename, 10)
 
-        file[0].status = "indexiert"
-        session.add(file[0])
-        session.commit()
+            file[0].status = "durchsuchbar"
+            session.add(file[0])
+            session.commit()
+
+            upload_files_model = load_documents(user_id)
 
     return render_template('documents.html', upload_files=upload_files_model)
 
