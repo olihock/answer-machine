@@ -119,6 +119,7 @@ def load_documents(user_id):
 @app.route('/import')
 @oidc.require_login
 def data_import():
+    flash('Bitte vor dem Hochladen alle Sonderzeichen in den Dateinamen beseitigen.')
     # noinspection PyUnresolvedReferences
     return render_template('import.html')
 

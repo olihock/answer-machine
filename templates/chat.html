@@ -27,7 +27,7 @@
             </div>
             <div class="row">
                 <div class="col-6">
-                    {% if answer != '' %}
+                    {% if not answer %}
                     <div class="input-group">
                         <select class="form-select" name="category" aria-label="category_label">
                             {% for category in categories %}
