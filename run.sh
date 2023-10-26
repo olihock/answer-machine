@@ -1,8 +1,14 @@
 #!/bin/bash
 
-./documentdb/run.sh
-./weaviate/run.sh
-./keycloak/run.sh
+# shellcheck disable=SC2164
+cd documentdb
+./run.sh
 
-docker compose build
-docker compose up -d
+cd ../weaviate
+./run.sh
+
+cd ../keycloak
+./run.sh
+
+# shellcheck disable=SC2103
+cd ..

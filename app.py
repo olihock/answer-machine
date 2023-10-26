@@ -10,11 +10,10 @@ from sqlalchemy import create_engine, select
 from werkzeug.utils import secure_filename
 from werkzeug.middleware.proxy_fix import ProxyFix
 
-from models import Base, UploadFile
+from models import Base, UploadFile, Category
 from search_ask.custom_data_reader import slice_to_pages
 from search_ask.weaviate_client import feed_vector_database, is_class_exists, create_class
 from search_ask.find_answer import search_for_answer
-
 
 load_dotenv()
 
@@ -61,16 +60,24 @@ def home():
 def chat_get():
     # noinspection PyDeprecation
     user_id = oidc.user_getinfo(['sub']).get('sub')
+    category_names = load_category_names(user_id)
 
+    # noinspection PyUnresolvedReferences
+    return render_template('chat.html', categories=category_names,
+                           user_question="", answer="")
+
+
+def load_category_names(user_id):
+    # noinspection PyDeprecation
+    user_id = oidc.user_getinfo(['sub']).get('sub')
     with Session(engine) as session:
-        stmt = select(UploadFile).where(UploadFile.user_id == user_id).distinct(UploadFile.category)
-        upload_files = session.execute(stmt)
-        categories = []
-        for upload_file in upload_files:
-            categories.append(upload_file[0].category)
+        stmt = select(Category).where(Category.user_id == user_id)
+        selected_categories = session.execute(stmt)
+        category_names = []
+        for category in selected_categories:
+            category_names.append(category[0].name)
 
-        # noinspection PyUnresolvedReferences
-        return render_template('chat.html', categories=categories)
+    return category_names
 
 
 @app.route('/chat', methods=['POST'])
@@ -88,7 +95,7 @@ def chat_post():
         return redirect(url_for('chat_post'))
 
     # noinspection PyUnresolvedReferences
-    return render_template('chat.html', answer=answer)
+    return render_template('chat.html', user_question=user_question, answer=answer)
 
 
 @app.route('/documents')
@@ -97,8 +104,11 @@ def documents():
     # noinspection PyDeprecation
     user_id = oidc.user_getinfo(['sub']).get('sub')
     upload_files_model = load_documents(user_id)
+    category_names = load_category_names(user_id)
+
     # noinspection PyUnresolvedReferences
-    return render_template('documents.html', upload_files=upload_files_model)
+    return render_template('documents.html',
+                           upload_files=upload_files_model, categories=category_names)
 
 
 def load_documents(user_id):
@@ -114,14 +124,6 @@ def load_documents(user_id):
                 "status": upload_file[0].status
             })
     return upload_files_model
-
-
-@app.route('/import')
-@oidc.require_login
-def data_import():
-    flash('Bitte vor dem Hochladen alle Sonderzeichen in den Dateinamen beseitigen.')
-    # noinspection PyUnresolvedReferences
-    return render_template('import.html')
 
 
 @app.route('/documents/<int:file_id>', methods=['GET', 'POST'])
@@ -154,33 +156,80 @@ def index(file_id):
     return render_template('documents.html', upload_files=upload_files_model)
 
 
-@app.route('/upload', methods=['GET', 'POST'])
+@app.route('/categories', methods=['GET'])
+@oidc.require_login
+def categories():
+    # noinspection PyUnresolvedReferences
+    return render_template('categories.html')
+
+
+@app.route('/save_category', methods=['POST'])
+@oidc.require_login
+def save_category():
+    category_name: str = request.form.get('category_name')
+    if not category_name:
+        flash('Bitte gib eine Kategorie ein.')
+        # noinspection PyUnresolvedReferences
+        return redirect(url_for('categories'))
+    logging.debug('category: ' + category_name)
+
+    # noinspection PyDeprecation
+    user_id = oidc.user_getinfo(['sub']).get('sub')
+    category_names = load_category_names(user_id)
+    if category_names.__contains__(category_name):
+        flash('Die Kategorie existiert bereits.')
+        return redirect(url_for('categories'))
+
+    with Session(engine) as session:
+        category = Category(user_id=user_id, name=category_name)
+        session.add(category)
+        session.commit()
+
+    # noinspection PyUnresolvedReferences
+    return redirect(url_for('documents'))
+
+
+@app.route('/upload', methods=['POST'])
 @oidc.require_login
 def upload():
-    if request.method == 'POST':
-        file = request.files['file']
-        filename = secure_filename(file.filename)
-        file.save(os.path.join(app.instance_path, 'upload_files', filename))
+    file = request.files['file']
+    filename = secure_filename(file.filename)
+    logging.debug('filename: ' + filename)
+    if not filename:
+        flash('Bitte wähle ein Dokument aus.')
+        # noinspection PyUnresolvedReferences
+        return redirect(url_for('documents'))
 
-        with Session(engine) as session:
-            stmt = select(UploadFile).where(UploadFile.filename == filename)
-            upload_files = session.execute(stmt).all()
-            if len(upload_files) == 0:
-                # sub is the uuid from keycloak
-                # noinspection PyDeprecation
-                user_id = oidc.user_getinfo(['sub']).get('sub')
+    category = request.form.get('category')
+    logging.debug('category: ' + category)
+    if not category:
+        flash('Bitte wähle eine Kategorie aus.')
+        # noinspection PyUnresolvedReferences
+        return redirect(url_for('documents'))
 
-                category = request.form.get('category')
-                category = re.sub("[^A-Za-z0-9]+", "_", category).capitalize()
+    file.save(os.path.join(app.instance_path, 'upload_files', filename))
+    with Session(engine) as session:
+        stmt = select(UploadFile).where(UploadFile.filename == filename)
+        upload_files = session.execute(stmt).all()
+        if len(upload_files) == 0:
+            # sub is the uuid from keycloak
+            # noinspection PyDeprecation
+            user_id = oidc.user_getinfo(['sub']).get('sub')
 
-                status = "hochgeladen"
+            category = request.form.get('category')
+            category = re.sub("[^A-Za-z0-9]+", "_", category).capitalize()
 
-                upload_file = UploadFile(user_id=user_id, category=category, filename=filename, status=status)
-                session.add(upload_file)
-                session.commit()
-                return 'File uploaded successfully.'
-            else:
-                return 'File already uploaded.'
+            status = "hochgeladen"
+
+            upload_file = UploadFile(user_id=user_id, category=category, filename=filename, status=status)
+            session.add(upload_file)
+            session.commit()
+
+            flash('Das Dokument wurde hochgeladen.')
+        else:
+            flash('Das Dokument existiert bereits.')
+
+        return redirect(url_for('documents'))
 
 
 @app.route('/profile')
