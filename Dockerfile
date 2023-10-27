@@ -8,4 +8,4 @@ COPY . .
 
 RUN apt update && apt install -y curl
 
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app", "--timeout", "120"]
