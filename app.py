@@ -121,7 +121,8 @@ def load_documents(user_id):
                 "id": upload_file[0].id,
                 "category": upload_file[0].category,
                 "filename": upload_file[0].filename,
-                "status": upload_file[0].status
+                "status": upload_file[0].status,
+                "content": upload_file[0].content
             })
     return upload_files_model
 
@@ -216,7 +217,8 @@ def upload():
 
             status = "hochgeladen"
 
-            upload_file = UploadFile(user_id=user_id, category=category, filename=filename, status=status)
+            upload_file = UploadFile(user_id=user_id, category=category, filename=filename, status=status,
+                                     content=file.read())
             session.add(upload_file)
             session.commit()
 
