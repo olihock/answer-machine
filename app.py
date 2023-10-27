@@ -133,8 +133,6 @@ def index(file_id):
     pages = []
     with Session(engine) as session:
         # noinspection PyDeprecation
-        user_id = oidc.user_getinfo(['sub']).get('sub')
-        upload_files_model = load_documents(user_id)
 
         stmt = select(UploadFile).where(file_id == UploadFile.id)
         file = session.execute(stmt).first()
@@ -150,10 +148,7 @@ def index(file_id):
             session.add(file[0])
             session.commit()
 
-            upload_files_model = load_documents(user_id)
-
-    # noinspection PyUnresolvedReferences
-    return render_template('documents.html', upload_files=upload_files_model)
+    return redirect(url_for('documents'))
 
 
 @app.route('/categories', methods=['GET'])
