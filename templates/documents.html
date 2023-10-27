@@ -112,12 +112,10 @@
                             <div class="row">
                                 <div class="col-6">
                                     {% if upload_file.status == 'hochgeladen' %}
-                                    <!--suppress HtmlUnknownTarget -->
-                                    <a class="nav-link" href="{{url_for('index', file_id=upload_file.id)}}"
-                                       id="action-index"
+                                    <!--suppress HtmlUnknownTarget, JSUnresolvedReference -->
+                                    <a class="nav-link index-spinner" href="{{url_for('index', file_id=upload_file.id)}}"
                                        data-bs-toggle="tooltip"
-                                       data-bs-title="Dieses Document in durchsuchbare Inhalte umwandeln."
-                                       onclick="spinner()">
+                                       data-bs-title="Dieses Document in durchsuchbare Inhalte umwandeln.">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
                                              fill="currentColor"
                                              class="bi bi-arrow-down-right-square-fill" viewBox="0 0 16 16">
@@ -126,7 +124,7 @@
                                     </a>
                                     {% else %}
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                                         class="bi bi-arrow-down-right-square" viewBox="0 0 16 16"
+                                         class="bi bi-arrow-down-right-square index-spinner" viewBox="0 0 16 16"
                                          data-bs-toggle="tooltip"
                                          data-bs-title="Dieses Document ist durchsuchbar.">
                                         <path fill-rule="evenodd"
@@ -135,8 +133,9 @@
                                     {% endif %}
                                 </div>
                                 <div class="col-6">
-                                    <div class="spinner-border text-secondary spinner-border-sm" id="index_spinner"
-                                         role="status">
+                                    <!--suppress XmlDuplicatedId -->
+                                    <div class="spinner-border text-secondary spinner-border-sm"
+                                         style="display: none;" role="status">
                                         <span class="visually-hidden">Indizierung des Dokuments ...</span>
                                     </div>
                                 </div>
@@ -151,8 +150,16 @@
     </div>
 </div>
 <script type="text/javascript">
-    function spinner() {
-        document.getElementsByClassName("spinner-border")[0].style.display = "block";
-    }
+    const links = document.querySelectorAll('.index-spinner');
+    const spinners = document.querySelectorAll('.spinner-border');
+    links.forEach((link, index) => {
+        console.log('index:', index);
+        link.addEventListener('click', function () {
+            spinners.forEach(spinner => {
+                spinner.style.display = 'none';
+            });
+            spinners[index].style.display = 'inline-block';
+        });
+    });
 </script>
 {% endblock %}
