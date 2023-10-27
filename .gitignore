@@ -10,3 +10,5 @@ data/
 /instance/
 /nginx/nginx.conf
 /oidc-config.json
+__pycache__/
+search_ask/__pycache__/
