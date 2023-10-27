@@ -5,6 +5,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - "10000:5000"
+    volumes:
+      - ~/ws/olihock/answer-machine-instance-volume:/app/instance
     networks:
       - answer-machine
       - weaviate_weaviate-network
