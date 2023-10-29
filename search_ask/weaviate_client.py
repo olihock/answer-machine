@@ -1,6 +1,8 @@
-from dotenv import load_dotenv
 import os
+import logging
 import weaviate
+
+from dotenv import load_dotenv
 
 load_dotenv()
 weaviate_url = os.environ["WEAVIATE_URL"]
@@ -45,6 +47,7 @@ def feed_vector_database(text_list, schema_name, user_id, file_id, filename, bat
                 "text": text
             }
             batch.add_data_object(properties, schema_name)
+            logging.debug("Indexed page " + str(i) + " of " + str(len(text_list)))
 
 
 def search_similar_texts(class_name: str, question: str):
