@@ -20,7 +20,7 @@ def create_class(class_name: str):
     Simply create a new schema by given class name and vectorizer.
     """
     clazz = {
-        "class": class_name,
+        "class": class_name.lower(),
         "vectorizer": weaviate_vectorizer
     }
     client.schema.create_class(clazz)

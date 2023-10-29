@@ -12,6 +12,14 @@ def slice_to_pages(filename):
     return pages
 
 
+def slice_pdf_document(pdf_content):
+    pages = []
+    for page in pdf_content.pages:
+        content = page.extract_text()
+        pages.append(content)
+    return pages
+
+
 def read_custom_data(data_path):
     """
     Read PDF files and ignore all other file types. Insert read text

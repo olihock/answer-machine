@@ -18,7 +18,7 @@ class UploadFile(Base):
     category: Mapped[str] = mapped_column(String)
     filename: Mapped[str] = mapped_column(String)
     status: Mapped[str] = mapped_column(String)
-    content: Mapped[BYTEA] = mapped_column(BYTEA)
+    content: Mapped[bytes] = mapped_column(BYTEA)
 
 
 class Category(Base):

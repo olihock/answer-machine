@@ -1,3 +1,4 @@
+import io
 import os
 import logging
 import re
@@ -9,9 +10,10 @@ from sqlalchemy.orm import Session
 from sqlalchemy import create_engine, select
 from werkzeug.utils import secure_filename
 from werkzeug.middleware.proxy_fix import ProxyFix
+from PyPDF2 import PdfReader
 
 from models import Base, UploadFile, Category
-from search_ask.custom_data_reader import slice_to_pages
+from search_ask.custom_data_reader import slice_pdf_document
 from search_ask.weaviate_client import feed_vector_database, is_class_exists, create_class
 from search_ask.find_answer import search_for_answer
 
@@ -60,14 +62,14 @@ def home():
 def chat_get():
     # noinspection PyDeprecation
     user_id = oidc.user_getinfo(['sub']).get('sub')
-    category_names = load_category_names(user_id)
+    category_names = load_category_names()
 
     # noinspection PyUnresolvedReferences
     return render_template('chat.html', categories=category_names,
                            user_question="", answer="")
 
 
-def load_category_names(user_id):
+def load_category_names():
     # noinspection PyDeprecation
     user_id = oidc.user_getinfo(['sub']).get('sub')
     with Session(engine) as session:
@@ -75,7 +77,7 @@ def load_category_names(user_id):
         selected_categories = session.execute(stmt)
         category_names = []
         for category in selected_categories:
-            category_names.append(category[0].name)
+            category_names.append(category[0].name.capitalize())
 
     return category_names
 
@@ -104,7 +106,7 @@ def documents():
     # noinspection PyDeprecation
     user_id = oidc.user_getinfo(['sub']).get('sub')
     upload_files_model = load_documents(user_id)
-    category_names = load_category_names(user_id)
+    category_names = load_category_names()
 
     # noinspection PyUnresolvedReferences
     return render_template('documents.html',
@@ -119,7 +121,7 @@ def load_documents(user_id):
         for upload_file in upload_files:
             upload_files_model.append({
                 "id": upload_file[0].id,
-                "category": upload_file[0].category,
+                "category": upload_file[0].category.capitalize(),
                 "filename": upload_file[0].filename,
                 "status": upload_file[0].status,
                 "content": upload_file[0].content
@@ -134,16 +136,18 @@ def index(file_id):
     pages = []
     with Session(engine) as session:
         # noinspection PyDeprecation
-
         stmt = select(UploadFile).where(file_id == UploadFile.id)
         file = session.execute(stmt).first()
         if file[0].status == "hochgeladen":
-            filename = os.path.join(app.instance_path, 'upload_files', file[0].filename)
-            pages = slice_to_pages(filename)
+            content = file[0].content
+            pdf_stream = io.BytesIO(content)
+            pdf_content = PdfReader(pdf_stream)
+
+            pages = slice_pdf_document(pdf_content)
 
             if not is_class_exists(file[0].category):
                 create_class(file[0].category)
-            feed_vector_database(pages, file[0].category, file[0].user_id, file[0].id, filename, 10)
+            feed_vector_database(pages, file[0].category, file[0].user_id, file[0].id, file[0].filename, 10)
 
             file[0].status = "durchsuchbar"
             session.add(file[0])
@@ -170,14 +174,15 @@ def save_category():
     logging.debug('category: ' + category_name)
 
     # noinspection PyDeprecation
-    user_id = oidc.user_getinfo(['sub']).get('sub')
-    category_names = load_category_names(user_id)
+    category_names = load_category_names()
     if category_names.__contains__(category_name):
         flash('Die Kategorie existiert bereits.')
         return redirect(url_for('categories'))
 
+    # noinspection PyDeprecation
+    user_id = oidc.user_getinfo(['sub']).get('sub')
     with Session(engine) as session:
-        category = Category(user_id=user_id, name=category_name)
+        category = Category(user_id=user_id, name=category_name.lower())
         session.add(category)
         session.commit()
 
@@ -203,7 +208,8 @@ def upload():
         # noinspection PyUnresolvedReferences
         return redirect(url_for('documents'))
 
-    file.save(os.path.join(app.instance_path, 'upload_files', filename))
+#    file_path = os.path.join(app.instance_path, 'upload_files', filename)
+#    file.save(file_path)
     with Session(engine) as session:
         stmt = select(UploadFile).where(UploadFile.filename == filename)
         upload_files = session.execute(stmt).all()
@@ -213,10 +219,11 @@ def upload():
             user_id = oidc.user_getinfo(['sub']).get('sub')
 
             category = request.form.get('category')
-            category = re.sub("[^A-Za-z0-9]+", "_", category).capitalize()
+            category = re.sub("[^A-Za-z0-9]+", "_", category).lower()
 
             status = "hochgeladen"
 
+#            read_file = open(file_path, 'rb').read()
             upload_file = UploadFile(user_id=user_id, category=category, filename=filename, status=status,
                                      content=file.read())
             session.add(upload_file)
