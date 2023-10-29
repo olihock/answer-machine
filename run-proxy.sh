@@ -8,7 +8,7 @@ cd ../weaviate
 ./run.sh
 
 cd ../keycloak
-./run.sh
+./start-proxy.sh
 
 # shellcheck disable=SC2103
 cd ..
