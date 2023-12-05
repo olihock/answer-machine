@@ -3,6 +3,7 @@ services:
   answer-machine:
     build:
       dockerfile: Dockerfile
+    restart: always
     ports:
       - "10000:5000"
     networks:

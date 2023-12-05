@@ -2,6 +2,7 @@ version: '3.4'
 services:
   t2v-transformers:
     image: semitechnologies/transformers-inference:sentence-transformers-multi-qa-MiniLM-L6-cos-v1
+    restart: always
     environment:
       ENABLE_CUDA: 0 # set to 1 to enable
       # NVIDIA_VISIBLE_DEVICES: all # enable if running with CUDA
@@ -9,6 +10,7 @@ services:
       - weaviate-network
   weaviate:
     image: semitechnologies/weaviate:1.21.2
+    restart: always
     ports:
       - "10002:8080"
     env_file:
